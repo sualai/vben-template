@@ -1,24 +1,32 @@
+import { RouteMeta } from "vue-router";
+
 /**
  * @description: Login interface parameters
  */
 export interface LoginParams {
-  username: string;
+  account: string;
   password: string;
 }
 
 export interface RoleInfo {
-  roleName: string;
-  value: string;
+  id: string;
+  code: string;
+  name: string;
+}
+export interface Menus {
+  component: string;
+  hidden: boolean;
+  id: string;
+  meta: RouteMeta;
+  name: string;
+  path: string;
+  pid: string;
+  redirect: string;
 }
 
 /**
  * @description: Login interface return value
  */
-export interface LoginResultModel {
-  userId: string | number;
-  token: string;
-  role: RoleInfo;
-}
 
 /**
  * @description: Get user information return value
@@ -35,4 +43,5 @@ export interface GetUserInfoModel {
   avatar: string;
   // 介绍
   desc?: string;
+  menus: Menus[]
 }

@@ -167,3 +167,7 @@ If you think this project is helpful to you, you can help the author buy a cup o
 ## License
 
 [MIT © Vben-2020](./LICENSE)
+
+
+### package.json 中校验失败，提交失败
+"lint:lint-staged": "lint-staged -c ./.husky/lintstagedrc.js", 

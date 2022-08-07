@@ -11,11 +11,13 @@ import { doLogout, getUserInfo, loginApi } from '/@/api/sys/user';
 import { useI18n } from '/@/hooks/web/useI18n';
 import { useMessage } from '/@/hooks/web/useMessage';
 import { router } from '/@/router';
-import { usePermissionStore } from '/@/store/modules/permission';
+// import { usePermissionStore } from '/@/store/modules/permission';
 import { RouteRecordRaw } from 'vue-router';
 import { PAGE_NOT_FOUND_ROUTE } from '/@/router/routes/basic';
 import { isArray } from '/@/utils/is';
 import { h } from 'vue';
+// import { transformRouteToMenu } from '/@/router/helper/menuHelper';
+import { transformObjToRoute } from '/@/router/helper/routeHelper';
 
 interface UserState {
   userInfo: Nullable<UserInfo>;
@@ -91,10 +93,9 @@ export const useUserStore = defineStore({
       try {
         const { goHome = true, mode, ...loginParams } = params;
         const data = await loginApi(loginParams, mode);
-        const { token } = data;
-
+    
         // save token
-        this.setToken(token);
+        this.setToken(data);
         return this.afterLoginAction(goHome);
       } catch (error) {
         return Promise.reject(error);
@@ -109,14 +110,31 @@ export const useUserStore = defineStore({
       if (sessionTimeout) {
         this.setSessionTimeout(false);
       } else {
-        const permissionStore = usePermissionStore();
-        if (!permissionStore.isDynamicAddedRoute) {
-          const routes = await permissionStore.buildRoutesAction();
+        // const permissionStore = usePermissionStore();
+        if (userInfo) {
+          const menu = userInfo.menus.filter(e => e.pid === '0').map( e=> {
+            if (e.component.toUpperCase === 'PAGEVIEW') {
+              e.component = 'LAYOUT'
+            }
+            return {...e}
+          })
+          
+          const list = menu.map(e => {
+            const children = userInfo.menus.filter(child => child.pid === e.id)
+            if (children && children.length > 0) {
+              e.children = children
+            }
+            return {...e}
+          })
+          // 设置左侧路由
+          localStorage.setItem('MENUS_LIST', JSON.stringify(list))
+          // 注册路由
+          const routes = transformObjToRoute(list)
           routes.forEach((route) => {
             router.addRoute(route as unknown as RouteRecordRaw);
           });
           router.addRoute(PAGE_NOT_FOUND_ROUTE as unknown as RouteRecordRaw);
-          permissionStore.setDynamicAddedRoute(true);
+          // permissionStore.setDynamicAddedRoute(true);
         }
         goHome && (await router.replace(userInfo?.homePath || PageEnum.BASE_HOME));
       }
@@ -127,7 +145,7 @@ export const useUserStore = defineStore({
       const userInfo = await getUserInfo();
       const { roles = [] } = userInfo;
       if (isArray(roles)) {
-        const roleList = roles.map((item) => item.value) as RoleEnum[];
+        const roleList = roles.map((item) => item.code) as RoleEnum[];
         this.setRoleList(roleList);
       } else {
         userInfo.roles = [];

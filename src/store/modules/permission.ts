@@ -8,7 +8,7 @@ import { useAppStoreWithOut } from './app';
 import { toRaw } from 'vue';
 import { transformObjToRoute, flatMultiLevelRoutes } from '/@/router/helper/routeHelper';
 import { transformRouteToMenu } from '/@/router/helper/menuHelper';
-
+import { cloneDeep } from 'lodash-es';
 import projectSetting from '/@/settings/projectSetting';
 
 import { PermissionModeEnum } from '/@/enums/appEnum';
@@ -165,8 +165,11 @@ export const usePermissionStore = defineStore({
           menuList.sort((a, b) => {
             return (a.meta?.orderNo || 0) - (b.meta?.orderNo || 0);
           });
-
-          this.setFrontMenuList(menuList);
+          const front = localStorage.getItem('MENUS_LIST') 
+          const frontList = front ? JSON.parse(front) :[]
+          console.log(menuList)
+          this.setFrontMenuList([...menuList, ...frontList]);
+          
           // Convert multi-level routing to level 2 routing
           routes = flatMultiLevelRoutes(routes);
           break;

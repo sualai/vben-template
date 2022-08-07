@@ -55,7 +55,6 @@
 
       const { prefixCls } = useDesign('basic-menu');
       const { items, mode, accordion } = toRefs(props);
-
       const { getCollapsed, getTopMenuAlign, getSplit } = useMenuSetting();
 
       const { currentRoute } = useRouter();
